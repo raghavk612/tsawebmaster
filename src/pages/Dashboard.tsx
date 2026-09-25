@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowRight, LogIn, RotateCcw, Trophy } from 'lucide-react';
+import { Avatar } from '../components/Avatar';
+import { Reveal, useCountUp } from '../components/motion';
 import { modules } from '../data/modules';
 import { badges } from '../data/badges';
 import { useProgress } from '../state/ProgressContext';
@@ -12,7 +14,9 @@ import { useTitle } from '../components/useTitle';
 
 export default function Dashboard() {
   useTitle('Dashboard');
-  const { progress, xp, max, level, badges: earned, dispatch } = useProgress();
+  const { progress, xp, max, level, badges: earned, dispatch, profile, leaderboard } = useProgress();
+  const shownXp = useCountUp(xp);
+  const board = leaderboard();
   const [confirming, setConfirming] = useState(false);
   const next = nextLesson(progress);
   const lessonsDone = modules.flatMap((m) => m.lessons).filter((l) => lessonComplete(progress, l.id)).length;
@@ -25,8 +29,13 @@ export default function Dashboard() {
     <div className="container">
       <header className="page-head">
         <span className="eyebrow">Progress dashboard</span>
-        <h1>Your AI learning journey</h1>
-        <p>Everything you’ve earned so far. Progress is saved in this browser only.</p>
+        <h1>{profile ? `Hi, ${profile.name}!` : 'Your AI learning journey'}</h1>
+        <p>{profile ? 'Everything you’ve earned so far, saved to your profile on this device.' : 'You’re learning as a guest. Progress is saved in this browser.'}</p>
+        {!profile && (
+          <Link to="/signin" className="btn btn-secondary">
+            <LogIn size={18} aria-hidden="true" /> Create a profile to join the leaderboard
+          </Link>
+        )}
       </header>
 
       <div className="dash-top">
@@ -37,7 +46,10 @@ export default function Dashboard() {
               <p className="eyebrow" style={{ marginBottom: 4 }}>Level {level.index + 1} of {LEVELS.length}</p>
               <h2 id="level-h" data-testid="level-name">{level.name}</h2>
               <p className="muted" style={{ marginBottom: 8 }}>
-                <strong data-testid="xp-total" style={{ color: 'var(--ink)' }}>{xp} XP</strong>
+                <strong style={{ color: 'var(--ink)' }}>
+                  <span aria-hidden="true">{shownXp} XP</span>
+                  <span className="sr-only" data-testid="xp-total">{xp} XP</span>
+                </strong>
                 {level.next ? ` · ${level.next.min - xp} XP to ${level.next.name}` : ' · Top level reached!'}
               </p>
               <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(levelPct * 100)} aria-label="Progress to next level">
@@ -76,6 +88,31 @@ export default function Dashboard() {
         </section>
       </div>
 
+      {board.length > 0 && (
+        <Reveal as="section" className="section" style={{ paddingTop: 'var(--s7)' }}>
+          <div className="section-head">
+            <div>
+              <h2 id="lb-h"><Trophy size={28} aria-hidden="true" style={{ verticalAlign: '-4px', color: 'var(--xp-bright)' }} /> Leaderboard</h2>
+              <p>Profiles on this device, ranked by XP.</p>
+            </div>
+          </div>
+          <ol className="leaderboard" aria-labelledby="lb-h" data-testid="leaderboard">
+            {board.map((r, i) => (
+              <li key={r.profile.id} className={r.profile.id === profile?.id ? 'me' : ''}>
+                <span className={`rank r${i + 1}`}>{i + 1}</span>
+                <Avatar id={r.profile.avatar} size={40} />
+                <span className="who">
+                  <strong>{r.profile.name}{r.profile.id === profile?.id ? ' (you)' : ''}</strong>
+                  <span>{r.level} · {r.badges} badges</span>
+                </span>
+                <span className="lb-bar" aria-hidden="true"><span style={{ width: `${(r.xp / max) * 100}%` }} /></span>
+                <strong className="lb-xp">{r.xp} XP</strong>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+      )}
+
       <section className="section" aria-labelledby="badges-h">
         <div className="section-head">
           <div>
@@ -87,7 +124,7 @@ export default function Dashboard() {
           {badges.map((b) => {
             const has = earned.includes(b.id);
             return (
-              <li key={b.id} className={`badge ${has ? '' : 'locked'}`} style={{ ['--c' as string]: b.color }} data-testid={`badge-${b.id}`} data-unlocked={has}>
+              <li key={b.id} className={`badge ${has ? 'earned' : 'locked'}`} style={{ ['--c' as string]: b.color }} data-testid={`badge-${b.id}`} data-unlocked={has}>
                 <div className="medal"><BadgeIcon icon={b.icon} /></div>
                 <strong>{b.name}</strong>
                 <p>{b.description}</p>

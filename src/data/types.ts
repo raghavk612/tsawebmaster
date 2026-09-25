@@ -4,7 +4,13 @@ export type Section =
   | { kind: 'text'; heading?: string; body: string[] }
   | { kind: 'callout'; tone: 'tip' | 'warn' | 'fact'; title: string; body: string }
   | { kind: 'list'; heading?: string; items: { term: string; detail: string }[] }
-  | { kind: 'compare'; heading?: string; columns: { title: string; points: string[] }[] };
+  | { kind: 'compare'; heading?: string; columns: { title: string; points: string[] }[] }
+  /** A quick, ungraded question that must be answered before continuing. */
+  | { kind: 'checkpoint'; question: string; choices: string[]; answer: number; explain: string }
+  /** An interactive explorable. */
+  | { kind: 'widget'; widget: WidgetId; heading?: string; caption?: string };
+
+export type WidgetId = 'family-tree' | 'threshold' | 'neuron' | 'temperature' | 'prompt-compare' | 'bias';
 
 export interface QuizQuestion {
   prompt: string;

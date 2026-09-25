@@ -23,6 +23,7 @@ export const ethics: Module = {
             'AI learns from data created by people, and that data reflects our world, including its unfairness. If a dataset under-represents some groups or records past discrimination, a model trained on it can repeat or even amplify those patterns at huge scale.',
           ],
         },
+        { kind: 'widget', widget: 'bias' },
         {
           kind: 'list',
           heading: 'Real examples researchers documented',
@@ -32,6 +33,7 @@ export const ethics: Module = {
             { term: 'Image generators', detail: 'Studies of text-to-image models have found they often default to stereotypes, for example picturing "CEO" or "engineer" mostly as men.' },
           ],
         },
+        { kind: 'checkpoint', question: "In the simulator, what closed the accuracy gap?", choices: ["Making the model bigger", "Including more Group B photos in the training data", "Adding a dark mode"], answer: 1, explain: "Representative data is one of the most important fixes, along with testing every group separately." },
         {
           kind: 'callout',
           tone: 'tip',
@@ -113,6 +115,7 @@ export const ethics: Module = {
             'There is no single rule for AI in school. One teacher may encourage AI brainstorming while another bans AI on an assignment entirely. Your class’s policy always comes first. When it’s unclear, ask before you use AI, not after.',
           ],
         },
+        { kind: 'checkpoint', question: "Your history teacher allows AI brainstorming, but your English teacher bans AI. Can you use AI to brainstorm your English essay?", choices: ["Yes, one teacher allowed it", "No, the English class policy applies", "Only if nobody finds out"], answer: 1, explain: "Each class’s policy governs its own work." },
         {
           kind: 'compare',
           heading: 'A common way to think about it',
@@ -187,6 +190,7 @@ export const ethics: Module = {
             'Many AI services may save what you type and use it to improve their models, depending on the service and your settings. Read the privacy settings, and assume anything you type could be seen by others. Never share passwords, addresses, ID numbers, health details, or private information about friends.',
           ],
         },
+        { kind: 'checkpoint', question: "An app’s privacy policy says chats “may be used to improve our services.” What does that most likely mean?", choices: ["Your chats could be stored, reviewed, or used for training", "Your chats are deleted instantly", "Nothing, it’s just legal words"], answer: 0, explain: "That phrase usually means your conversations can be kept and used, so don’t type anything private." },
         {
           kind: 'text',
           heading: 'Deepfakes and synthetic media',

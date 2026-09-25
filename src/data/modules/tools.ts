@@ -40,6 +40,7 @@ export const tools: Module = {
           title: 'Rule of thumb',
           body: 'Use AI to help you think, not to think for you. The best uses leave you understanding more than when you started.',
         },
+        { kind: 'checkpoint', question: "You need current, checkable sources about a local news event. Which tool fits best?", choices: ["An image generator", "An AI search tool that links to its sources", "A chatbot with no web access"], answer: 1, explain: "Recent events need live sources, and links let you verify them." },
       ],
       activity: {
         type: 'sort',
@@ -101,6 +102,7 @@ export const tools: Module = {
             'A prompt is the instruction you give an AI. Vague prompts get generic answers. Clear, specific prompts get useful ones. Think of it as briefing a very capable tutor who knows nothing about you, your class, or your assignment.',
           ],
         },
+        { kind: 'widget', widget: 'prompt-compare' },
         {
           kind: 'list',
           heading: 'The five building blocks',
@@ -112,6 +114,7 @@ export const tools: Module = {
             { term: 'Constraints', detail: 'What should it avoid? "Don’t give me the answer until I try."' },
           ],
         },
+        { kind: 'checkpoint', question: "What’s missing from this prompt: “Act as a coach. Make me a workout plan.”", choices: ["A role", "A task", "Context, like your age, goal, and equipment"], answer: 2, explain: "It has a role and a task, but without context the plan can’t fit you." },
         {
           kind: 'callout',
           tone: 'tip',
@@ -195,6 +198,7 @@ export const tools: Module = {
             { term: 'Feedback, not rewrite', detail: '"Point out the three weakest parts of my argument. Don’t rewrite it."' },
           ],
         },
+        { kind: 'checkpoint', question: "Which prompt keeps YOU doing the thinking?", choices: ["“Write my lab conclusion.”", "“Ask me questions that lead me to the conclusion, without giving it away.”", "“Summarize the chapter so I don’t have to read it.”"], answer: 1, explain: "Socratic prompts make you retrieve and reason, which is how learning sticks." },
         {
           kind: 'text',
           heading: 'Verify before you trust',
@@ -203,6 +207,7 @@ export const tools: Module = {
             'Be especially careful with numbers, dates, names, quotes, and citations. Those are where hallucinations hide.',
           ],
         },
+        { kind: 'checkpoint', question: "An AI cites “Smith (2019), Journal of Space Facts.” What should you do first?", choices: ["Copy it into your bibliography", "Search for the article to confirm it exists and says that", "Ask the AI if it’s sure"], answer: 1, explain: "Only the original source can confirm a citation. Asking the AI again can produce another confident guess." },
       ],
       activity: {
         type: 'spot',

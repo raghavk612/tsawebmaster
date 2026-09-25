@@ -39,6 +39,7 @@ ROUTES = [
     "/about",
     "/references",
     "/work-log",
+    "/signin",
     "/this-page-does-not-exist",
 ]
 
@@ -64,6 +65,24 @@ def fresh(page: Page, base: str, path: str = "/"):
     page.evaluate("localStorage.clear()")
     page.goto(base + path)
     page.wait_for_load_state("networkidle")
+
+
+def open_practice(page: Page):
+    """Walk the lesson stepper: answer each quick check correctly, press Continue, until the activity shows."""
+    for _ in range(12):
+        if page.get_by_test_id("activity").count():
+            return
+        cps = page.get_by_test_id("checkpoint")
+        if cps.count():
+            cp = cps.last
+            if cp.get_attribute("data-answered") != "true":
+                choices = cp.locator(".choice")
+                for i in range(choices.count()):
+                    choices.nth(i).click()
+                    if cp.get_attribute("data-answered") == "true":
+                        break
+        page.get_by_test_id("continue").click()
+    expect(page.get_by_test_id("activity")).to_be_visible()
 
 
 def xp_pill(page: Page) -> str:
@@ -104,6 +123,7 @@ def t_home_links(page, base):
 @check("complete lesson 1.1: XP, completion, badges, and persistence after reload")
 def t_lesson_flow(page, base):
     fresh(page, base, "/learn/fundamentals/what-is-ai")
+    open_practice(page)
     assert "0 XP" in xp_pill(page)
     act = page.get_by_test_id("activity")
     items = act.get_by_test_id("sort-item")
@@ -141,6 +161,7 @@ def t_lesson_flow(page, base):
 @check("failing a quiz (1/3) does not complete the lesson, and retry keeps the best score")
 def t_quiz_fail(page, base):
     fresh(page, base, "/learn/ethics/bias-fairness")
+    open_practice(page)
     quiz = page.get_by_test_id("quiz")
     for ans in [0, 0, 1]:  # correct answers are 1,1,1 -> only the last is right
         quiz.get_by_role("radio").nth(ans).click()
@@ -155,6 +176,7 @@ def t_quiz_fail(page, base):
 @check("prompt builder: flawless prompt unlocks Prompt Pro; trap parts are flagged")
 def t_prompt(page, base):
     fresh(page, base, "/learn/tools/prompting")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     act.get_by_role("button", name=re.compile("Then write my 5-paragraph essay")).click()
     act.get_by_role("button", name="Check my prompt").click()
@@ -172,6 +194,7 @@ def t_prompt(page, base):
 @check("train-spam: correct labels give 4/4; wrong labels reduce accuracy")
 def t_spam(page, base):
     fresh(page, base, "/learn/fundamentals/how-machines-learn")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     msgs = act.get_by_test_id("train-msg")
     truth = [True, False, True, False, True, False, True, False]
@@ -190,6 +213,7 @@ def t_spam(page, base):
 @check("spot-the-hallucination and scenario activities complete")
 def t_spot_scenario(page, base):
     fresh(page, base, "/learn/tools/study-and-verify")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     for i in [2, 4, 5]:
         act.locator(".sentence").nth(i).click()
@@ -197,6 +221,7 @@ def t_spot_scenario(page, base):
     expect(act.get_by_text("6 / 6 sentences judged correctly.")).to_be_visible()
 
     page.goto(base + "/learn/ethics/privacy-deepfakes")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     act.get_by_role("button", name=re.compile("Check the school")).click()
     expect(act.get_by_text("Great call.")).to_be_visible()
@@ -211,6 +236,7 @@ def t_spot_scenario(page, base):
 @check("next-token game shows probabilities and finishes")
 def t_next_token(page, base):
     fresh(page, base, "/learn/fundamentals/neural-networks-llms")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     for w in ["jelly", "Armstrong", "lunch"]:
         act.get_by_role("button", name=w, exact=True).click()
@@ -222,6 +248,7 @@ def t_next_token(page, base):
 @check("dashboard reset requires confirmation and clears progress")
 def t_reset(page, base):
     fresh(page, base, "/learn/tools/ai-toolbox")
+    open_practice(page)
     act = page.get_by_test_id("activity")
     answers = [0, 1, 2, 0, 1, 2]
     names = ["Chat assistant", "AI search / research", "Speech & accessibility"]
@@ -280,6 +307,137 @@ def t_mobile_nav(browser, base):
     ctx.close()
 
 
+@check("sign in: create profile, per-profile progress, sign out/in, leaderboard")
+def t_profiles(page, base):
+    fresh(page, base, "/learn/tools/ai-toolbox")
+    open_practice(page)
+    act = page.get_by_test_id("activity")
+    names = ["Chat assistant", "AI search / research", "Speech & accessibility"]
+    items = act.get_by_test_id("sort-item")
+    for i, a in enumerate([0, 1, 2, 0, 1, 2]):
+        items.nth(i).get_by_role("button", name=names[a], exact=True).click()
+    act.get_by_role("button", name="Check answers").click()
+    expect(page.locator(".xp-pill")).to_contain_text("30 XP")
+
+    page.get_by_role("link", name="Sign in").first.click()
+    expect(page).to_have_url(re.compile("/signin$"))
+    page.get_by_label("Nickname").fill("a")
+    expect(page.locator("#nick-err")).to_contain_text("at least 2")
+    page.get_by_label("Nickname").fill("Nova")
+    expect(page.get_by_text("will move into your new profile")).to_be_visible()
+    page.locator(".avatar-opt").nth(2).click()
+    page.get_by_role("button", name=re.compile("Create profile")).click()
+    expect(page).to_have_url(re.compile("/dashboard$"))
+    expect(page.get_by_role("heading", name="Hi, Nova!")).to_be_visible()
+    expect(page.get_by_test_id("xp-total")).to_have_text("30 XP")  # guest XP carried over
+    expect(page.get_by_test_id("leaderboard")).to_contain_text("Nova (you)")
+    page.screenshot(path=str(SHOTS / "flow_dashboard_signed_in.png"), full_page=True)
+
+    page.get_by_role("button", name="Account: Nova").click()
+    page.get_by_role("menuitem", name="Sign out").click()
+    expect(page.locator(".xp-pill")).to_contain_text("0 XP")
+
+    page.goto(base + "/signin")
+    page.get_by_role("tab", name="New profile").click()
+    page.get_by_label("Nickname").fill("nova")
+    expect(page.locator("#nick-err")).to_contain_text("already")
+    page.get_by_label("Nickname").fill("Zed")
+    page.get_by_role("button", name=re.compile("Create profile")).click()
+    expect(page.get_by_test_id("xp-total")).to_have_text("0 XP")
+    expect(page.get_by_test_id("leaderboard").locator("li")).to_have_count(2)
+    expect(page.get_by_test_id("leaderboard").locator("li").first).to_contain_text("Nova")
+
+    page.goto(base + "/signin")
+    page.get_by_role("button", name="Sign in as Nova").click()
+    expect(page.get_by_test_id("xp-total")).to_have_text("30 XP")
+    page.reload()
+    expect(page.get_by_test_id("xp-total")).to_have_text("30 XP")
+    expect(page.get_by_role("button", name="Account: Nova")).to_be_visible()
+
+    page.goto(base + "/signin")
+    page.get_by_role("button", name="Delete profile Zed").click()
+    page.get_by_role("button", name="Delete", exact=True).click()
+    expect(page.get_by_test_id("profile-tile")).to_have_count(1)
+
+
+@check("lesson stepper: quick check gates Continue; flip cards flip")
+def t_stepper(page, base):
+    fresh(page, base, "/learn/fundamentals/how-machines-learn")
+    expect(page.get_by_test_id("activity")).to_have_count(0)
+    cont = page.get_by_test_id("continue")
+    expect(cont).to_be_disabled()
+    cp = page.get_by_test_id("checkpoint").first
+    cp.locator(".choice").nth(0).click()  # wrong
+    expect(cp.get_by_text("Not quite")).to_be_visible()
+    expect(cont).to_be_disabled()
+    cp.locator(".choice").nth(1).click()  # right
+    expect(cont).to_be_enabled()
+    cont.click()
+    expect(page.get_by_test_id("lesson-step")).to_have_count(2)
+    card = page.get_by_test_id("flip-card").first
+    card.click()
+    expect(card).to_have_attribute("aria-pressed", "true")
+    page.screenshot(path=str(SHOTS / "flow_stepper.png"))
+    open_practice(page)
+    expect(page.get_by_test_id("quiz")).to_be_visible()
+
+
+@check("widgets: threshold, neuron, temperature, family tree, prompt compare, bias")
+def t_widgets(page, base):
+    fresh(page, base, "/learn/fundamentals/how-machines-learn")
+    open_practice(page)
+    w = page.get_by_test_id("widget-threshold")
+    w.locator("input[type=range]").fill("4.5")
+    expect(w.get_by_text(re.compile("best any single cut-off can do: 11/12"))).to_be_visible()
+    w.get_by_role("button", name=re.compile("Test it on 6 new fruits")).click()
+    expect(w.get_by_text("5/6")).to_be_visible()
+    w.screenshot(path=str(SHOTS / "widget_threshold.png"))
+
+    page.goto(base + "/learn/fundamentals/neural-networks-llms")
+    open_practice(page)
+    n = page.get_by_test_id("widget-neuron")
+    n.locator("input[type=range]").nth(2).fill("-1.5")
+    expect(n.get_by_text(re.compile("Solved!"))).to_be_visible()
+    n.screenshot(path=str(SHOTS / "widget_neuron.png"))
+    t = page.get_by_test_id("widget-temperature")
+    t.locator("input[type=range]").fill("0.2")
+    expect(t.locator(".prob-row").first).to_contain_text(re.compile(r"9\d%"))
+    t.get_by_role("button", name="Generate 10").click()
+    expect(t.locator(".chip")).to_have_count(10)
+
+    page.goto(base + "/learn/fundamentals/what-is-ai")
+    open_practice(page)
+    f = page.get_by_test_id("widget-family-tree")
+    # rings are nested, so a center click hits the inner ring by design; use the keyboard instead
+    f.get_by_role("button", name="Machine learning").focus()
+    page.keyboard.press("Enter")
+    expect(f.get_by_role("heading", name="Machine learning")).to_be_visible()
+
+    page.goto(base + "/learn/tools/prompting")
+    open_practice(page)
+    pc = page.get_by_test_id("widget-prompt-compare")
+    pc.get_by_role("tab", name="Specific prompt").click()
+    expect(pc.locator(".ans-line")).to_have_count(6)
+    pc.screenshot(path=str(SHOTS / "widget_prompt.png"))
+
+    page.goto(base + "/learn/ethics/bias-fairness")
+    open_practice(page)
+    b = page.get_by_test_id("widget-bias")
+    expect(b.get_by_text(re.compile("-point gap"))).to_be_visible()
+    b.locator("input[type=range]").fill("50")
+    expect(b.get_by_text(re.compile("Balanced data"))).to_be_visible()
+
+
+@check("home has marquees (duplicate copy hidden from screen readers) and page transitions")
+def t_motion(page, base):
+    fresh(page, base, "/")
+    expect(page.locator(".marquee")).to_have_count(2)
+    expect(page.locator(".marquee-group[aria-hidden=true]")).to_have_count(2)
+    expect(page.locator(".page-enter")).to_have_count(1)
+    page.get_by_role("link", name="Glossary").first.click()
+    expect(page.locator(".page-enter h1")).to_have_text("AI glossary")
+
+
 # ---------------------------------------------------------------- runner
 def port_open(port: int) -> bool:
     with socket.socket() as s:
@@ -305,7 +463,7 @@ def main():
             browser = p.chromium.launch(headless=True)
             t_routes(browser, base)
             t_mobile_nav(browser, base)
-            for t in [t_home_links, t_lesson_flow, t_quiz_fail, t_prompt, t_spam, t_spot_scenario, t_next_token, t_reset, t_glossary, t_corrupt]:
+            for t in [t_home_links, t_lesson_flow, t_quiz_fail, t_prompt, t_spam, t_spot_scenario, t_next_token, t_reset, t_glossary, t_corrupt, t_profiles, t_stepper, t_widgets, t_motion]:
                 ctx = browser.new_context(viewport={"width": 1280, "height": 900})
                 page = ctx.new_page()
                 page.set_default_timeout(5000)

@@ -12,7 +12,16 @@ export function ModuleCard({ mod }: { mod: Module }) {
   const minutes = mod.lessons.reduce((s, l) => s + l.minutes, 0);
   const cta = p.done === 0 ? 'Start module' : p.done === p.total ? 'Review module' : 'Continue';
   return (
-    <article className="card module-card" style={moduleStyle(mod.id, mod.color)} data-testid={`module-card-${mod.id}`}>
+    <article
+      className="card module-card"
+      style={moduleStyle(mod.id, mod.color)}
+      data-testid={`module-card-${mod.id}`}
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+      }}
+    >
       <div className="module-card-top">
         <span className="module-num">Module {mod.number}</span>
         <ProgressRing pct={p.pct} size={56} stroke={6} color={mod.color} label={`${p.done}/${p.total}`} />

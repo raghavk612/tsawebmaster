@@ -33,6 +33,7 @@ export function HeroArt() {
       <circle cx="390" cy="190" r="70" fill="url(#glow)" />
       {lines}
       <path
+        className="hero-path"
         d="M60 230 L170 190 L280 240 L390 190"
         fill="none"
         stroke="var(--primary)"
@@ -45,6 +46,8 @@ export function HeroArt() {
         ys.map((y, i) => (
           <circle
             key={`n${li}-${i}`}
+            className="hero-node"
+            style={{ animationDelay: `${li * 0.35 + i * 0.12}s`, transformOrigin: `${xs[li]}px ${y}px` }}
             cx={xs[li]}
             cy={y}
             r={li === 3 ? 30 : 17}
@@ -54,6 +57,7 @@ export function HeroArt() {
           />
         )),
       )}
+      <circle className="hero-pulse" r="8" fill="var(--xp-bright)" style={{ offsetPath: "path('M60 230 L170 190 L280 240 L390 190')" }} />
       <path d="M378 190 l8 8 l16 -18" fill="none" stroke="var(--ink)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
       <g fontFamily="var(--font-head)" fontWeight="700" fontSize="14" fill="var(--ink-2)" textAnchor="middle">
         <text x="60" y="30">Learn</text>

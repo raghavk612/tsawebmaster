@@ -1,11 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Circle, Clock, Gamepad2, ListChecks, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Circle, Clock, Gamepad2, ListChecks, LayoutDashboard, LogIn } from 'lucide-react';
 import { findLesson } from '../data/modules';
+import type { Lesson, Module } from '../data/types';
 import { useProgress } from '../state/ProgressContext';
 import { lessonComplete, lessonXp, PASS_MARK, XP } from '../state/progress';
-import { SectionView } from '../components/SectionView';
 import { ActivityRunner } from '../activities/ActivityRunner';
 import { Quiz } from '../components/Quiz';
+import { LessonStepper } from '../components/LessonStepper';
+import { Confetti } from '../components/motion';
 import { moduleStyle } from '../components/moduleStyle';
 import { useTitle } from '../components/useTitle';
 import NotFound from './NotFound';
@@ -13,16 +16,28 @@ import NotFound from './NotFound';
 export default function LessonPage() {
   const { moduleId, lessonId } = useParams();
   const found = findLesson(moduleId, lessonId);
-  const { progress, dispatch } = useProgress();
   useTitle(found ? found.lesson.title : 'Not found');
   if (!found) return <NotFound />;
+  // key: remount (reset steps, activity, quiz) whenever the lesson changes
+  return <LessonView key={found.lesson.id} {...found} />;
+}
 
-  const { mod, lesson, index, next, prev } = found;
+function LessonView({ mod, lesson, index, next, prev }: { mod: Module; lesson: Lesson; index: number; next?: Lesson; prev?: Lesson }) {
+  const { progress, dispatch, profile } = useProgress();
   const lp = progress.lessons[lesson.id];
   const activityDone = !!lp?.activityDone;
   const quizPassed = (lp?.quizBest ?? 0) >= PASS_MARK;
   const complete = lessonComplete(progress, lesson.id);
   const maxLessonXp = XP.activity + lesson.quiz.length * XP.perCorrect;
+  const [startedBefore] = useState(() => !!lp);
+
+  // Confetti the moment this lesson becomes complete.
+  const [party, setParty] = useState(0);
+  const wasComplete = useRef(complete);
+  useEffect(() => {
+    if (complete && !wasComplete.current) setParty((p) => p + 1);
+    wasComplete.current = complete;
+  }, [complete]);
 
   const nextLink = next ? (
     <Link to={`/learn/${mod.id}/${next.id}`} className="btn btn-primary">
@@ -35,13 +50,68 @@ export default function LessonPage() {
   );
 
   const steps = [
-    { label: 'Read the lesson', done: activityDone || (lp?.quizAttempts ?? 0) > 0 },
+    { label: 'Work through the lesson', done: activityDone || (lp?.quizAttempts ?? 0) > 0 },
     { label: `Activity (+${XP.activity} XP)`, done: activityDone },
     { label: `Quiz: ${PASS_MARK}/${lesson.quiz.length} to pass`, done: quizPassed },
   ];
 
+  const practice = (
+    <>
+      <section className="panel" aria-labelledby="activity-h" data-testid="activity">
+        <div className="panel-head">
+          <Gamepad2 size={24} color={mod.color} aria-hidden="true" />
+          <h2 id="activity-h" tabIndex={-1} data-focus>{lesson.activity.title}</h2>
+          <span className="tag">{activityDone ? 'Done ✓' : `+${XP.activity} XP`}</span>
+        </div>
+        <div className="panel-body">
+          <p className="instructions">{lesson.activity.instructions}</p>
+          <ActivityRunner
+            activity={lesson.activity}
+            onComplete={(score) => dispatch({ type: 'activity', lessonId: lesson.id, score, kind: lesson.activity.type })}
+          />
+        </div>
+      </section>
+
+      <section className="panel" aria-labelledby="quiz-h" data-testid="quiz">
+        <div className="panel-head">
+          <ListChecks size={24} color={mod.color} aria-hidden="true" />
+          <h2 id="quiz-h">Check your understanding</h2>
+          <span className="tag">{quizPassed ? 'Passed ✓' : `Up to +${lesson.quiz.length * XP.perCorrect} XP`}</span>
+        </div>
+        <div className="panel-body">
+          <Quiz
+            questions={lesson.quiz}
+            best={lp?.quizBest ?? null}
+            onFinish={(correct) => dispatch({ type: 'quiz', lessonId: lesson.id, correct, total: lesson.quiz.length })}
+          />
+        </div>
+      </section>
+
+      {complete && (
+        <div className="done-banner pop-in" role="status" data-testid="lesson-complete">
+          <Check size={22} aria-hidden="true" /> Lesson complete: {lessonXp(progress, lesson.id)} / {maxLessonXp} XP
+          {nextLink}
+        </div>
+      )}
+      {!complete && (activityDone || (lp?.quizAttempts ?? 0) > 0) && (
+        <p className="muted" style={{ marginTop: 'var(--s4)' }}>
+          {!activityDone ? 'Finish the activity to complete this lesson.' : `Score at least ${PASS_MARK} on the quiz to complete this lesson.`}
+        </p>
+      )}
+      {complete && !profile && (
+        <p className="feedback info">
+          <LogIn size={18} aria-hidden="true" />
+          <span>
+            Nice work! <Link to="/signin">Create a profile</Link> to keep this progress under your name and join the leaderboard.
+          </span>
+        </p>
+      )}
+    </>
+  );
+
   return (
     <div className="container" style={moduleStyle(mod.id, mod.color)}>
+      <Confetti trigger={party} />
       <nav className="crumbs" aria-label="Breadcrumb">
         <Link to="/learn">Learn</Link> <span aria-hidden="true">/</span>
         <Link to={`/learn/${mod.id}`}>Module {mod.number}: {mod.title}</Link> <span aria-hidden="true">/</span>
@@ -56,53 +126,7 @@ export default function LessonPage() {
           <h1>{lesson.title}</h1>
           <p style={{ fontSize: 20, color: 'var(--ink-2)' }}>{lesson.summary}</p>
 
-          {lesson.sections.map((s, i) => (
-            <SectionView key={i} section={s} />
-          ))}
-
-          <section className="panel" aria-labelledby="activity-h" data-testid="activity">
-            <div className="panel-head">
-              <Gamepad2 size={24} color={mod.color} aria-hidden="true" />
-              <h2 id="activity-h">{lesson.activity.title}</h2>
-              <span className="tag">{activityDone ? 'Done ✓' : `+${XP.activity} XP`}</span>
-            </div>
-            <div className="panel-body">
-              <p className="instructions">{lesson.activity.instructions}</p>
-              <ActivityRunner
-                key={lesson.id}
-                activity={lesson.activity}
-                onComplete={(score) => dispatch({ type: 'activity', lessonId: lesson.id, score, kind: lesson.activity.type })}
-              />
-            </div>
-          </section>
-
-          <section className="panel" aria-labelledby="quiz-h" data-testid="quiz">
-            <div className="panel-head">
-              <ListChecks size={24} color={mod.color} aria-hidden="true" />
-              <h2 id="quiz-h">Check your understanding</h2>
-              <span className="tag">{quizPassed ? 'Passed ✓' : `Up to +${lesson.quiz.length * XP.perCorrect} XP`}</span>
-            </div>
-            <div className="panel-body">
-              <Quiz
-                key={lesson.id}
-                questions={lesson.quiz}
-                best={lp?.quizBest ?? null}
-                onFinish={(correct) => dispatch({ type: 'quiz', lessonId: lesson.id, correct, total: lesson.quiz.length })}
-              />
-            </div>
-          </section>
-
-          {complete && (
-            <div className="done-banner" role="status" data-testid="lesson-complete">
-              <Check size={22} aria-hidden="true" /> Lesson complete: {lessonXp(progress, lesson.id)} / {maxLessonXp} XP
-              {nextLink}
-            </div>
-          )}
-          {!complete && (activityDone || (lp?.quizAttempts ?? 0) > 0) && (
-            <p className="muted" style={{ marginTop: 'var(--s4)' }}>
-              {!activityDone ? 'Finish the activity to complete this lesson.' : `Score at least ${PASS_MARK} on the quiz to complete this lesson.`}
-            </p>
-          )}
+          <LessonStepper sections={lesson.sections} startOpen={startedBefore} practice={practice} accent={mod.color} />
 
           <div className="btn-row" style={{ justifyContent: 'space-between', marginTop: 'var(--s6)' }}>
             {prev ? (

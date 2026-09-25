@@ -47,8 +47,8 @@ export default function About() {
         <div className="grid grid-2" style={{ marginTop: 'var(--s4)' }}>
           {[
             { icon: Code2, title: 'Technology', body: 'React + TypeScript with Vite and React Router, deployed on Vercel. Lesson content lives in data files, so adding a lesson requires no new code. The XP/badge engine is pure functions covered by automated unit tests, and every page is checked with Playwright browser tests.' },
-            { icon: Lock, title: 'Privacy by design', body: 'No accounts, no analytics, no AI API calls. Progress is stored in your browser’s localStorage, and even the spam-filter activity trains its model locally on your device.' },
-            { icon: Accessibility, title: 'Accessibility', body: 'All colors meet WCAG AA contrast. Every activity works with a keyboard (no drag-only interactions). We added a skip link, visible focus states, and screen-reader announcements for feedback and rewards, and the site respects reduced-motion settings.' },
+            { icon: Lock, title: 'Privacy by design', body: 'Sign-in uses nickname profiles that live only on your device: no email, no passwords, no analytics, and no AI API calls. Progress is stored in localStorage, and even the spam-filter activity trains its model locally.' },
+            { icon: Accessibility, title: 'Accessibility', body: 'All colors meet WCAG AA contrast. Every activity and explorable works with a keyboard (no drag-only interactions), and all animations turn off when your device asks for reduced motion. We added a skip link, visible focus states, and screen-reader announcements for feedback and rewards, and the site respects reduced-motion settings.' },
             { icon: Palette, title: 'Design', body: 'Atkinson Hyperlegible (made by the Braille Institute for readability) for body text, Bricolage Grotesque for headings, and a color for each module. All illustrations are original SVG.' },
           ].map(({ icon: Icon, title, body }) => (
             <div className="card" key={title}>

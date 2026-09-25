@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Gamepad2, Trophy, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpen, Gamepad2, Trophy, ShieldCheck, Sparkles, LogIn } from 'lucide-react';
+import { Marquee, Reveal } from '../components/motion';
+import { facts, topics } from '../data/facts';
+import { Avatar } from '../components/Avatar';
 import { modules } from '../data/modules';
 import { badges } from '../data/badges';
 import { ModuleCard } from '../components/ModuleCard';
@@ -10,7 +13,7 @@ import { useTitle } from '../components/useTitle';
 
 export default function Home() {
   useTitle('');
-  const { progress, xp, level, badges: earned } = useProgress();
+  const { progress, xp, level, badges: earned, profile } = useProgress();
   const next = nextLesson(progress);
   const started = xp > 0;
   const lessonCount = modules.reduce((s, m) => s + m.lessons.length, 0);
@@ -19,7 +22,9 @@ export default function Home() {
     <>
       <section className="container hero">
         <div>
-          <span className="eyebrow">Free AI course for grades 9–12</span>
+          <span className="eyebrow hero-eyebrow">
+            {profile ? (<><Avatar id={profile.avatar} size={22} /> Welcome back, {profile.name}</>) : (<><Sparkles size={16} aria-hidden="true" /> Free AI course for grades 9–12</>)}
+          </span>
           <h1>
             Understand AI. <em>Use it well.</em> Level up.
           </h1>
@@ -36,9 +41,11 @@ export default function Home() {
                 See your achievements <Trophy size={20} aria-hidden="true" />
               </Link>
             )}
-            <Link to="/learn" className="btn btn-secondary btn-lg">
-              Browse modules
-            </Link>
+            {profile ? (
+              <Link to="/learn" className="btn btn-secondary btn-lg">Browse modules</Link>
+            ) : (
+              <Link to="/signin" className="btn btn-secondary btn-lg"><LogIn size={20} aria-hidden="true" /> Sign in</Link>
+            )}
           </div>
           <div className="stat-strip" aria-label="Course at a glance">
             <div><strong>{modules.length}</strong>modules</div>
@@ -52,6 +59,14 @@ export default function Home() {
         <HeroArt />
       </section>
 
+      <div className="marquee-band">
+        <Marquee label="Topics you’ll learn" speed={45}>
+          {topics.map((t) => (
+            <span className="marquee-chip" key={t}>{t}</span>
+          ))}
+        </Marquee>
+      </div>
+
       <section className="container section" aria-labelledby="modules-h">
         <div className="section-head">
           <div>
@@ -63,8 +78,10 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-3">
-          {modules.map((m) => (
-            <ModuleCard key={m.id} mod={m} />
+          {modules.map((m, i) => (
+            <Reveal key={m.id} delay={i * 90}>
+              <ModuleCard mod={m} />
+            </Reveal>
           ))}
         </div>
       </section>
@@ -76,27 +93,42 @@ export default function Home() {
             { icon: BookOpen, title: 'Learn in 10 minutes', body: 'Each lesson is a short read with real examples, not jargon.' },
             { icon: Gamepad2, title: 'Practice by doing', body: 'Train a spam filter, rebuild a weak prompt, catch a chatbot’s hallucinations, and make tough ethical calls.' },
             { icon: Trophy, title: 'Earn XP and badges', body: 'Pass quizzes to complete lessons. Your dashboard tracks every module, level, and badge.' },
-          ].map(({ icon: Icon, title, body }) => (
-            <div className="card" key={title}>
-              <Icon size={28} color="var(--primary)" aria-hidden="true" />
-              <h3 style={{ marginTop: 'var(--s3)' }}>{title}</h3>
-              <p className="muted" style={{ margin: 0 }}>{body}</p>
-            </div>
+          ].map(({ icon: Icon, title, body }, i) => (
+            <Reveal key={title} delay={i * 90}>
+              <div className="card how-card">
+                <span className="how-num">{i + 1}</span>
+                <Icon size={28} color="var(--primary)" aria-hidden="true" />
+                <h3 style={{ marginTop: 'var(--s3)' }}>{title}</h3>
+                <p className="muted" style={{ margin: 0 }}>{body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="container section">
+      <section className="section" aria-labelledby="facts-h">
+        <h2 id="facts-h" className="sr-only">AI history facts</h2>
+        <div className="ticker">
+          <span className="ticker-label"><Sparkles size={16} aria-hidden="true" /> Did you know?</span>
+          <Marquee label="AI history facts" speed={80} reverse>
+            {facts.map((f) => (
+              <span className="ticker-item" key={f}>{f}</span>
+            ))}
+          </Marquee>
+        </div>
+      </section>
+
+      <Reveal as="section" className="container section">
         <div className="card" style={{ display: 'flex', gap: 'var(--s4)', alignItems: 'center', flexWrap: 'wrap' }}>
           <ShieldCheck size={36} color="var(--m2)" aria-hidden="true" />
           <div style={{ flex: '1 1 300px' }}>
-            <h3 style={{ marginBottom: 4 }}>No account. No tracking.</h3>
+            <h3 style={{ marginBottom: 4 }}>No email. No password. No tracking.</h3>
             <p className="muted" style={{ margin: 0 }}>
-              Your progress is saved only in this browser. Nothing you type here is sent anywhere, which fits what Module 3 teaches about privacy.
+              Profiles and progress are saved only on this device. Nothing you type here is sent anywhere, which fits what Module 3 teaches about privacy.
             </p>
           </div>
         </div>
-      </section>
+      </Reveal>
     </>
   );
 }

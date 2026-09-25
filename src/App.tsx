@@ -11,6 +11,7 @@ import About from './pages/About';
 import References from './pages/References';
 import WorkLog from './pages/WorkLog';
 import NotFound from './pages/NotFound';
+import SignIn from './pages/SignIn';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="about" element={<About />} />
             <Route path="references" element={<References />} />
             <Route path="work-log" element={<WorkLog />} />
+            <Route path="signin" element={<SignIn />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

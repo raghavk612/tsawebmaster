@@ -13,7 +13,12 @@ TSA High School Webmaster theme: **Artificial Intelligence (AI) learning portal*
 | Student copyright checklist page | `/references#copyright` |
 | Student work log page | `/work-log` |
 
-Each lesson includes a short reading, an interactive activity and a 3-question quiz. There are six activity types:
+Lessons unfold step by step: short chunks, quick-check questions that gate **Continue**, flip cards,
+and a hands-on explorable (neuron builder, temperature dial, bias simulator, etc.), then an
+activity and a 3-question quiz. Nickname **profiles** (no password, stored on the device) keep
+each student's progress separate and feed a device leaderboard.
+
+Each lesson ends with an interactive activity and a 3-question quiz. There are six activity types:
 sort, **train a real naive-Bayes spam filter**, next-token prediction, prompt builder,
 spot-the-hallucination, and ethics scenarios.
 

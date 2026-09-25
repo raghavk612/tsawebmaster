@@ -46,22 +46,14 @@ export const fundamentals: Module = {
             },
           ],
         },
-        {
-          kind: 'list',
-          heading: 'The AI family tree',
-          items: [
-            { term: 'Artificial intelligence', detail: 'The whole field: any technique that lets computers act "smart".' },
-            { term: 'Machine learning (ML)', detail: 'A branch of AI where systems learn patterns from data instead of hand-written rules.' },
-            { term: 'Deep learning', detail: 'ML using large neural networks with many layers. Powers face unlock, voice assistants, and translation.' },
-            { term: 'Generative AI', detail: 'Deep-learning models that create new text, images, audio, or code, like chatbots and image generators.' },
-          ],
-        },
+        { kind: 'checkpoint', question: "A thermostat turns on the heat whenever the room drops below 68°F. Is that AI?", choices: ["Yes, it makes a decision on its own", "No, it follows one fixed rule a person wrote", "Only if it has Wi-Fi"], answer: 1, explain: "No learning from data is happening; a person wrote the rule. A “smart” thermostat that learns your schedule over time would be using AI." },
         {
           kind: 'callout',
           tone: 'fact',
           title: 'Narrow, not general',
           body: 'Every AI system that exists today is "narrow AI": it is good at a specific range of tasks. A chess engine cannot drive a car. "Artificial general intelligence" (AGI), meaning AI that matches people across nearly every task, is a research goal and a topic of debate, not a product you can use.',
         },
+        { kind: 'widget', widget: 'family-tree' },
       ],
       activity: {
         type: 'sort',
@@ -129,6 +121,7 @@ export const fundamentals: Module = {
             'The examples are called training data. The answers attached to them ("ripe", "spam", "cat") are labels. The measurable details the model looks at, like color, firmness, or which words appear, are called features.',
           ],
         },
+        { kind: 'checkpoint', question: "In a spam filter, the words in each email are the ___, and “spam / not spam” is the ___.", choices: ["labels / features", "features / labels", "weights / tokens"], answer: 1, explain: "Features are what the model looks at; labels are the answers it learns to predict." },
         {
           kind: 'list',
           heading: 'Three main ways machines learn',
@@ -145,12 +138,14 @@ export const fundamentals: Module = {
             'A model is trained on one set of examples and tested on a separate set it has never seen. That test score tells us how well it generalizes. A model that memorizes its training data but fails on new data is overfitting, like a student who memorized the practice test answers but never understood the material.',
           ],
         },
+        { kind: 'widget', widget: 'threshold' },
         {
           kind: 'callout',
           tone: 'warn',
           title: 'Garbage in, garbage out',
           body: 'A model can only be as good as its data. If the training examples are mislabeled, too few, or unrepresentative, the model learns the wrong lessons. You will see this for yourself in the activity below.',
         },
+        { kind: 'checkpoint', question: "A model scores 100% on its training data but only 60% on new data. What’s most likely happening?", choices: ["It’s overfitting: it memorized instead of learning", "It’s perfect", "The new data must be broken"], answer: 0, explain: "Big gaps between training and test scores are the classic sign of overfitting." },
       ],
       activity: {
         type: 'train-spam',
@@ -220,6 +215,7 @@ export const fundamentals: Module = {
             'Training adjusts millions or billions of these weights, a little at a time, so the network’s outputs get closer to the right answers. No one programs the weights by hand. They are learned from data.',
           ],
         },
+        { kind: 'widget', widget: 'neuron' },
         {
           kind: 'text',
           heading: 'Large language models (LLMs)',
@@ -228,6 +224,7 @@ export const fundamentals: Module = {
             'Given "The capital of France is", the model assigns a probability to every possible next token, picks one, adds it, and repeats. After further training with human feedback, this simple loop produces answers that can explain, summarize, translate, and write code.',
           ],
         },
+        { kind: 'widget', widget: 'temperature' },
         {
           kind: 'callout',
           tone: 'warn',
@@ -242,6 +239,7 @@ export const fundamentals: Module = {
             { term: 'Often weak', detail: 'Exact facts and citations, very recent events, precise math without tools, and knowing when they don’t know.' },
           ],
         },
+        { kind: 'checkpoint', question: "Why can a chatbot state a fake fact so confidently?", choices: ["It is lying on purpose", "It generates likely-sounding text instead of checking facts", "Its Wi-Fi is slow"], answer: 1, explain: "LLMs predict plausible next tokens. Nothing in that loop checks whether the result is true." },
       ],
       activity: {
         type: 'next-token',
