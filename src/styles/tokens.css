@@ -1,0 +1,45 @@
+:root {
+  --ink: #17142e;
+  --ink-2: #4a4668;
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --line: #e7e3da;
+  --primary: #5536e8;
+  --primary-press: #4326cc;
+  --primary-soft: #eeeafe;
+  --m1: #5536e8;
+  --m1-soft: #eeeafe;
+  --m2: #0b7a5c;
+  --m2-soft: #e6f6f0;
+  --m3: #c23a2f;
+  --m3-soft: #fdecea;
+  --xp: #8a5a12;
+  --xp-soft: #fff4dc;
+  --xp-bright: #f5a524;
+  --ok: #0b7a5c;
+  --ok-soft: #e6f6f0;
+  --bad: #c23a2f;
+  --bad-soft: #fdecea;
+
+  --font-head: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 72px;
+
+  --r-sm: 10px;
+  --r-md: 18px;
+  --r-pill: 999px;
+
+  --shadow: 0 1px 2px rgba(23, 20, 46, 0.06), 0 6px 20px rgba(23, 20, 46, 0.06);
+  --shadow-lift: 0 2px 4px rgba(23, 20, 46, 0.08), 0 12px 32px rgba(23, 20, 46, 0.1);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --container: 1120px;
+  --measure: 68ch;
+}
