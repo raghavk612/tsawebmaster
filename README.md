@@ -31,6 +31,16 @@ npm test             # unit tests (progress engine + spam model)
 npm run test:e2e     # builds, then runs Playwright browser tests (needs: pip install playwright)
 ```
 
+## Deploy (GitHub Pages)
+
+The site is published at https://raghavk612.github.io/tsawebmaster/.
+GitHub Pages publishes the built files from the `gh-pages` branch. To update the
+deployment, run `npm ci`, `npm test`, and `npm run build -- --base /tsawebmaster/`,
+copy `dist/index.html` to `dist/404.html`, add `dist/.nojekyll`, and publish the
+contents of `dist` to `gh-pages`. Source pushes to `main` do not redeploy automatically.
+The build uses the Pages base path, and `404.html` loads the app for direct lesson
+links (GitHub Pages returns HTTP 404 for these routes, but the app renders normally).
+
 ## Deploy (Vercel)
 
 Import the GitHub repo at vercel.com and accept the defaults (Vite, output folder `dist`).

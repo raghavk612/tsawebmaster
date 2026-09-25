@@ -16,7 +16,7 @@ import SignIn from './pages/SignIn';
 export default function App() {
   return (
     <ProgressProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Home />} />
